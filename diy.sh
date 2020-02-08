@@ -17,7 +17,7 @@ sed -i '/$ipt -A SS_SPEC_TPROXY -p udp -d $SERVER -j RETURN/a \
         $ipt -A SS_SPEC_TPROXY -p udp -m ipp2p --edk --bit --kazaa --gnu -j RETURN
 ' package/lean/luci-app-ssr-plus/root/usr/bin/ssr-rules
 
-./scripts/feeds update -a
-./scripts/feeds install -a
+#./scripts/feeds update -a
+#./scripts/feeds install -a
 
 sed -i 's/ +luci-theme-bootstrap//g' feeds/luci/collections/luci/Makefile
