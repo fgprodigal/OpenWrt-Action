@@ -6,6 +6,8 @@
 # Blog: https://p3terx.com
 #=================================================
 
+mv -f .config .config.bak
+
 echo 'src-git lienol https://github.com/Lienol/openwrt-package' >> feeds.conf.default
 ./scripts/feeds clean
 ./scripts/feeds update -a
@@ -47,3 +49,5 @@ sed -i '/$iptables_mangle -N PSW_ACL/i \
 ' feeds/lienol/lienol/luci-app-passwall/root/usr/share/passwall/iptables.sh
 
 sed -i 's/ +luci-theme-bootstrap//g' feeds/luci/collections/luci/Makefile
+
+mv -f .config.bak .config
