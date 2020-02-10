@@ -1,0 +1,136 @@
+name: Build OpenWrt NanoPi-R1s H5
+
+on:
+  release:
+    types: [published]
+  push:
+    branches:
+      - master
+    paths:
+      - 'r1s-h5.config'
+  schedule:
+    - cron: 0 22 * * *
+#  watch:
+#    types: [started]
+
+env:
+  REPO_URL: https://github.com/coolsnowwolf/lede
+  REPO_BRANCH: master
+  CONFIG_FILE: r1s-h5.config
+  DIY_SH: customize.sh
+  FREE_UP_DISK: false
+  SSH_ACTIONS: false
+  UPLOAD_BIN_DIR: false
+  UPLOAD_FIRMWARE: true
+  TZ: Asia/Shanghai
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+      with:
+        ref: master
+
+    - name: Initialization Environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        wget -O - https://raw.githubusercontent.com/friendlyarm/build-env-on-ubuntu-bionic/master/install.sh | bash         
+        
+    - name: Install Repo
+      run: |
+        git clone https://github.com/friendlyarm/repo
+        sudo cp repo/repo /usr/bin/
+        
+    - name: Download Source
+      run: |
+        mkdir friendlywrt-h5
+        cd friendlywrt-h5
+        repo init -u https://github.com/friendlyarm/friendlywrt_manifests -b master -m h5.xml --repo-url=https://github.com/friendlyarm/repo  --no-clone-bundle
+    
+    - name: Merge UpStearm OpenWrt
+      run: |
+        cd friendlywrt-h5
+        cd .repo/manifests
+        rm -f ./h5.xml
+        wget https://raw.githubusercontent.com/skytotwo/NanoPi-R1S-Build-By-Actions/master/source_xml/h5_19.07.xml
+        mv h5_19.07.xml h5.xml
+        repo sync -c  --no-clone-bundle
+    
+    - name: Merge LEDE
+      run: |
+        cd friendlywrt-h5
+        git clone --depth 1 $REPO_URL -b $REPO_BRANCH lede
+        cd friendlywrt
+        cp -r ../lede/package/lean package/
+        sed -i 's/https:\/\/git.openwrt.org\/project\/luci.git^039ef1f4deba725d3591b159bbc9569885d68131/https:\/\/github.com\/coolsnowwolf\/luci/' feeds.conf.default
+        sed -i 's/https:\/\/git.openwrt.org\/feed\/packages.git^00803ffc91e80b16e9c1603ff32106d42e255923/https:\/\/github.com\/coolsnowwolf\/packages/' feeds.conf.default          
+    
+    - name: Add Lienol's feed and update feeds
+      run: |
+        cd friendlywrt-h5/friendlywrt
+        echo 'src-git lienol https://github.com/Lienol/openwrt-package' >> feeds.conf.default
+        ./scripts/feeds update -a
+        rm -rf feeds/lienol/lienol/ipt2socks
+        rm -rf feeds/lienol/lienol/shadowsocksr-libev
+        rm -rf feeds/lienol/lienol/pdnsd-alt
+        rm -rf feeds/lienol/package/verysync
+        rm -rf feeds/lienol/lienol/luci-app-verysync
+        rm -rf package/lean/kcptun
+        rm -rf package/lean/trojan
+        rm -rf package/lean/v2ray
+        rm -rf package/lean/luci-app-kodexplorer
+        rm -rf package/lean/luci-app-pppoe-relay
+        rm -rf package/lean/luci-app-pptp-server
+        rm -rf package/lean/luci-app-v2ray-server
+        
+    - name: Update Target.mk
+      run: |
+        cd friendlywrt-h5/friendlywrt/include 
+        sed -i 's/dnsmasq /dnsmasq-full default-settings luci /' target.mk    
+        
+    - name: Install Feeds
+      run: |
+        cd friendlywrt-h5/friendlywrt
+        ./scripts/feeds install -a
+        
+    - name: Load custom configuration
+      run: |
+        [ -e files ] && mv files friendlywrt-h5/friendlywrt/files
+        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE friendlywrt-h5/friendlywrt/.config
+        chmod +x $DIY_SH
+        cd friendlywrt-h5/friendlywrt
+        ../../$DIY_SH
+        make defconfig
+    
+    - name: Download package
+      if: always()
+      run: |
+        cd friendlywrt-h5/friendlywrt
+        make download -j8
+        find dl -size -1024c -exec ls -l {} \;
+        find dl -size -1024c -exec rm -f {} \;
+        
+    - name: Build OpenWrt
+      run: |
+        cd friendlywrt-h5
+        ./build.sh nanopi_r1s.mk
+    
+    - name: Zip Files
+      run: |
+        find friendlywrt-h5/out/ -name "FriendlyWrt_*img*" | xargs -i zip -r {}.zip {}
+        
+    - name: Assemble Artifact
+      run: |
+        rm -rf ./artifact/
+        mkdir -p ./artifact/
+        find friendlywrt-h5/out/ -name "FriendlyWrt_*img.zip*" | xargs -i mv -f {} ./artifact/
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@master
+      with:
+        name: FriendlyWrt_NanoPi-R1S H5 v19.07
+        path: ./artifact/
