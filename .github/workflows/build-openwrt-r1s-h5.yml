@@ -38,6 +38,9 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
+        sudo swapoff /swapfile
+        sudo rm -rf /swapfile /etc/apt/sources.list.d/*
+        sudo -E apt-get -qq update
         wget -O - https://raw.githubusercontent.com/friendlyarm/build-env-on-ubuntu-bionic/master/install.sh | bash         
         
     - name: Install repo
