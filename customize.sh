@@ -50,6 +50,8 @@ sed -i '/$iptables_mangle -N PSW_ACL/i \
 
 sed -i 's/ +luci-theme-bootstrap//g' feeds/luci/collections/luci/Makefile
 
+sed -i "s/echo \"DISTRIB_DESCRIPTION='OpenWrt '\"/echo \"DISTRIB_DESCRIPTION='OpenWrt Compiled by Ray '\"/g" package/lean/default-settings/files/zzz-default-settings
+
 chmod +x files/etc/init.d/redsocks
 
 mv -f .config.bak .config
