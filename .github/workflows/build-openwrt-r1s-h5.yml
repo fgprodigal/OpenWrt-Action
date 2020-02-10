@@ -41,8 +41,19 @@ jobs:
         sudo swapoff /swapfile
         sudo rm -rf /swapfile /etc/apt/sources.list.d/*
         sudo -E apt-get -qq update
-        wget -O - https://raw.githubusercontent.com/friendlyarm/build-env-on-ubuntu-bionic/master/install.sh | bash         
-        
+        sudo -E apt-get -qq install bison g++-multilib git gperf libxml2-utils make python-networkx zip flex curl libncurses5-dev libssl-dev zlib1g-dev gawk minicom openjdk-8-jdk device-tree-compiler liblz4-tool zlib1g:i386 openssh-server vim qemu-user-static exfat-fuse exfat-utils p7zip-full tree autoconf libcurl4-openssl-dev libssh-dev pkg-config libelf-dev libtool libqt5core5a libqt5gui5 libqt5opengl5 libqt5printsupport5 libqt5widgets5 libqt5x11extras5 libsdl1.2debian texinfo genext2fs lzip help2man libtool libtool-bin debootstrap u-boot-tools swig python-dev python3-dev ack-grep time gettext java-propose-classpath android-tools-fsutils
+    
+    - name: Free up disk space
+      if: env.FREE_UP_DISK == 'true'
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo rm -rf /usr/share/dotnet
+        docker rmi `docker images -q`
+        sudo -E apt-get -q purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* mysql* php*
+        sudo -E apt-get -qq autoremove --purge
+        sudo -E apt-get -qq clean
+
     - name: Install repo
       run: |
         git clone https://github.com/friendlyarm/repo
@@ -109,6 +120,10 @@ jobs:
         ../../$DIY_SH
         make defconfig
     
+    - name: SSH connection to Actions
+      uses: P3TERX/debugger-action@master
+      if: env.SSH_ACTIONS == 'true'
+
     - name: Download package
       if: always()
       run: |
