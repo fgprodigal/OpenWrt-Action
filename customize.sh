@@ -26,4 +26,7 @@ sed -i 's/ +luci-theme-bootstrap//g' feeds/luci/collections/luci/Makefile
 
 sed -i "s/echo \"DISTRIB_DESCRIPTION='OpenWrt '\"/echo \"DISTRIB_DESCRIPTION='OpenWrt Compiled by Ray '\"/g" package/lean/default-settings/files/zzz-default-settings
 
+sed -i 's/192.168.1.1/10.0.0.1/g' package/base-files/files/bin/config_generate
+sed -i 's/192.168.2.1/10.0.0.1/g' package/base-files/files/bin/config_generate
+
 chmod +x files/etc/init.d/redsocks
