@@ -68,12 +68,7 @@ jobs:
       run: |
         cd openwrt
         echo 'src-git lienol https://github.com/Lienol/openwrt-package' >> feeds.conf.default
-        ./scripts/feeds update -a
-        rm -rf feeds/lienol/lienol/ipt2socks
-        rm -rf feeds/lienol/lienol/shadowsocksr-libev
-        rm -rf feeds/lienol/lienol/pdnsd-alt
-        rm -rf feeds/lienol/package/verysync
-        rm -rf feeds/lienol/lienol/luci-app-verysync
+        ./scripts/feeds clean
         rm -rf package/lean/kcptun
         rm -rf package/lean/trojan
         rm -rf package/lean/v2ray
@@ -81,10 +76,17 @@ jobs:
         rm -rf package/lean/luci-app-pppoe-relay
         rm -rf package/lean/luci-app-pptp-server
         rm -rf package/lean/luci-app-v2ray-server
+        ./scripts/feeds update -a
+        rm -rf feeds/lienol/package/ipt2socks
+        rm -rf feeds/lienol/package/shadowsocksr-libev
+        rm -rf feeds/lienol/package/lpdnsd-alt
+        rm -rf feeds/lienol/package/verysync
+        rm -rf feeds/lienol/others/luci-app-verysync
+
 
     - name: Install feeds
       run: cd openwrt && ./scripts/feeds install -a
-    
+
     - name: Create symlink
       run: |
         cd openwrt
