@@ -29,4 +29,4 @@ sed -i "s/echo \"DISTRIB_DESCRIPTION='OpenWrt '\"/echo \"DISTRIB_DESCRIPTION='Op
 sed -i 's/192.168.1.1/10.0.0.1/g' package/base-files/files/bin/config_generate
 sed -i 's/192.168.2.1/10.0.0.1/g' package/base-files/files/bin/config_generate
 
-cp -f ../mod/redsocks.init feeds/packages/net/redsocks/files/redsocks.init
+[ -e mod ] && cp -f mod/redsocks.init feeds/packages/net/redsocks/files/redsocks.init

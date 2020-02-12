@@ -116,6 +116,7 @@ jobs:
     - name: Load custom configuration
       run: |
         [ -e files ] && mv files friendlywrt-h5/friendlywrt/files
+        [ -e mod ] && mv mod friendlywrt-h5/friendlywrt/mod
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE friendlywrt-h5/friendlywrt/.config
         chmod +x $DIY_SH
         cd friendlywrt-h5/friendlywrt
