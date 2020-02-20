@@ -6,7 +6,7 @@
 # Blog: https://p3terx.com
 #=================================================
 
-git clone https://github.com/rufengsuixing/luci-app-adguardhome package/lean/luci-app-adguardhome
+# git clone https://github.com/rufengsuixing/luci-app-adguardhome package/lean/luci-app-adguardhome
 
 sed -i '/$IPT -A SS_SPEC_WAN_FW -d 240.0.0.0\/4 -j RETURN/a \
         $IPT -A SS_SPEC_WAN_FW -m ipp2p --edk --dc --kazaa --gnu --bit --apple --winmx --soul --ares -j RETURN
