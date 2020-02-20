@@ -1,7 +1,8 @@
 #!/bin/sh /etc/rc.common
 # Copyright (C) 2007 OpenWrt.org
 
-START=90
+START=99
+STOP=10
 
 # check if configuration exists
 [ -e "/etc/redsocks.conf" ] || exit 0
