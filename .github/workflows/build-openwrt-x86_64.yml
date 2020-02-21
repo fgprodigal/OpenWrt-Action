@@ -64,6 +64,11 @@ jobs:
     - name: Clone source code
       run: git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
 
+    - name: Add my feed
+      run: |
+        cd openwrt
+        echo 'src-git ray https://github.com/fgprodigal/openwrt-package' >> feeds.conf.default
+
     - name: Add Lienol's feed and update feeds
       run: |
         cd openwrt
@@ -77,22 +82,17 @@ jobs:
         rm -rf package/lean/luci-app-pptp-server
         rm -rf package/lean/luci-app-v2ray-server
         ./scripts/feeds update -a
+        rm -rf feeds/packages/net/redsocks/
         rm -rf feeds/lienol/package/ipt2socks
         rm -rf feeds/lienol/package/shadowsocksr-libev
         rm -rf feeds/lienol/package/lpdnsd-alt
         rm -rf feeds/lienol/package/verysync
         rm -rf feeds/lienol/others/luci-app-verysync
+        ./scripts/feeds update -a
 
 
     - name: Install feeds
       run: cd openwrt && ./scripts/feeds install -a
-
-    - name: Create symlink
-      run: |
-        cd openwrt
-        ln -sf ../../../feeds/lienol/package/trojan package/feeds/lienol/trojan
-        ln -sf ../../../feeds/lienol/package/kcptun package/feeds/lienol/kcptun
-        ln -sf ../../../feeds/lienol/package/v2ray package/feeds/lienol/v2ray
 
     - name: Load custom configuration
       run: |

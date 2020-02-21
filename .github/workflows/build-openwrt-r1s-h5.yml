@@ -84,6 +84,11 @@ jobs:
         sed -i 's/https:\/\/git.openwrt.org\/project\/luci.git^039ef1f4deba725d3591b159bbc9569885d68131/https:\/\/github.com\/coolsnowwolf\/luci/' feeds.conf.default
         sed -i 's/https:\/\/git.openwrt.org\/feed\/packages.git^00803ffc91e80b16e9c1603ff32106d42e255923/https:\/\/github.com\/coolsnowwolf\/packages/' feeds.conf.default
 
+    - name: Add my feed
+      run: |
+        cd friendlywrt-h5/friendlywrt
+        echo 'src-git ray https://github.com/fgprodigal/openwrt-package' >> feeds.conf.default
+
     - name: Add Lienol's feed and update feeds
       run: |
         cd friendlywrt-h5/friendlywrt
@@ -97,11 +102,13 @@ jobs:
         rm -rf package/lean/luci-app-pptp-server
         rm -rf package/lean/luci-app-v2ray-server
         ./scripts/feeds update -a
+        rm -rf feeds/packages/net/redsocks/
         rm -rf feeds/lienol/package/ipt2socks
         rm -rf feeds/lienol/package/shadowsocksr-libev
         rm -rf feeds/lienol/package/lpdnsd-alt
         rm -rf feeds/lienol/package/verysync
         rm -rf feeds/lienol/others/luci-app-verysync
+        ./scripts/feeds update -a
 
     - name: Update target.mk
       run: |
