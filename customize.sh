@@ -24,6 +24,10 @@ sed -i '/$ipt_m -N PSW_ACL/i \
 	$ipt_m -A PSW -p udp -m ipp2p --edk --bit --kazaa --gnu -j RETURN
 ' feeds/lienol/lienol/luci-app-passwall/root/usr/share/passwall/iptables.sh
 
+sed -i 's/#define Build\/Compile/define Build\/Compile/' package/feeds/lienol/redsocks2/Makefile
+sed -i 's/#\t$(call Build\/Compile\/Default,ENABLE_HTTPS_PROXY=true)/\t$(call Build\/Compile\/Default,DISABLE_SHADOWSOCKS=true)/' package/feeds/lienol/redsocks2/Makefile
+sed -i 's/#endef/endef/' package/feeds/lienol/redsocks2/Makefile
+
 sed -i 's/ +luci-theme-bootstrap//g' feeds/luci/collections/luci/Makefile
 
 sed -i "s/echo \"DISTRIB_DESCRIPTION='OpenWrt '\"/echo \"DISTRIB_DESCRIPTION='OpenWrt Compiled by Ray '\"/g" package/lean/default-settings/files/zzz-default-settings
