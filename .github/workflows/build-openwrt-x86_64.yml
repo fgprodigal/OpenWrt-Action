@@ -82,7 +82,6 @@ jobs:
         rm -rf package/lean/luci-app-pptp-server
         rm -rf package/lean/luci-app-v2ray-server
         ./scripts/feeds update -a
-        rm -rf feeds/packages/net/redsocks/
         rm -rf feeds/lienol/package/ipt2socks
         rm -rf feeds/lienol/package/shadowsocksr-libev
         rm -rf feeds/lienol/package/lpdnsd-alt
