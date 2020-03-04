@@ -14,7 +14,7 @@ sed -i '/$IPT -A SS_SPEC_WAN_FW -d 240.0.0.0\/4 -j RETURN/a \
         $IPT -A SS_SPEC_WAN_FW -m ipp2p --edk --dc --kazaa --gnu --bit --apple --winmx --soul --ares -j RETURN
 ' package/lean/luci-app-ssr-plus/root/usr/bin/ssr-rules
 
-sed -i '/$ipt -A SS_SPEC_TPROXY -p udp -d $SERVER -j RETURN/a \
+sed -i '/$ipt -A SS_SPEC_TPROXY -p udp -d 240.0.0.0\/4 -j RETURN/a \
         $ipt -A SS_SPEC_TPROXY -p udp -m ipp2p --edk --bit --kazaa --gnu -j RETURN
 ' package/lean/luci-app-ssr-plus/root/usr/bin/ssr-rules
 
