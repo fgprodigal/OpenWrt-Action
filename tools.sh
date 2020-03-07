@@ -1,9 +1,10 @@
 #!/bin/bash
 
 cp -r ../lede/tools/upx tools/upx
+cp -r ../lede/tools/ucl tools/ucl
 
 sed -i '/# builddir dependencies/i \
-tools-y += upx
+tools-y += ucl upx
 ' tools/Makefile
 
 sed -i '/# builddir dependencies/a \
