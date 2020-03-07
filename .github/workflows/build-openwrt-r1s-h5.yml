@@ -119,6 +119,13 @@ jobs:
         cd friendlywrt-h5/friendlywrt
         ./scripts/feeds install -a
 
+    - name: Add tools
+      run: |
+        chmod +x tools.sh
+        cd friendlywrt-h5/friendlywrt
+        ../../tools.sh
+        
+
     - name: Load custom configuration
       run: |
         [ -e files ] && mv files friendlywrt-h5/friendlywrt/files
