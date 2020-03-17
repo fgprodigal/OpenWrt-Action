@@ -18,7 +18,7 @@ env:
   REPO_BRANCH: master
   CONFIG_FILE: r1s-h5.config
   DIY_SH: customize.sh
-  FREE_UP_DISK: false
+  FREE_UP_DISK: true
   SSH_ACTIONS: false
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
