@@ -6,7 +6,8 @@
 # Blog: https://p3terx.com
 #=================================================
 
-# git clone https://github.com/rufengsuixing/luci-app-adguardhome package/lean/luci-app-adguardhome
+rm -rf package/lean/luci-theme-argon  
+git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git package/lean/luci-theme-argon  
 
 sed -i 's/redirect_https\t1/redirect_https\t0/g' package/network/services/uhttpd/files/uhttpd.config
 
