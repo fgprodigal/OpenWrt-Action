@@ -18,13 +18,6 @@ sed -i '/$ipt -A SS_SPEC_TPROXY -p udp -d 240.0.0.0\/4 -j RETURN/a \
         $ipt -A SS_SPEC_TPROXY -p udp -m ipp2p --edk --bit --kazaa --gnu -j RETURN
 ' package/lean/luci-app-ssr-plus/root/usr/bin/ssr-rules
 
-sed -i '/$ipt_n -N PSW_ACL/i \
-	$ipt_n -A PSW -m ipp2p --edk --dc --kazaa --gnu --bit --apple --winmx --soul --ares -j RETURN
-' feeds/lienol/lienol/luci-app-passwall/root/usr/share/passwall/iptables.sh
-
-sed -i '/$ipt_m -N PSW_ACL/i \
-	$ipt_m -A PSW -p udp -m ipp2p --edk --bit --kazaa --gnu -j RETURN
-' feeds/lienol/lienol/luci-app-passwall/root/usr/share/passwall/iptables.sh
 
 sed -i 's/ +luci-theme-bootstrap//g' feeds/luci/collections/luci/Makefile
 
