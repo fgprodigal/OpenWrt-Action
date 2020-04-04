@@ -129,7 +129,7 @@ jobs:
 
     - name: Zip files
       run: |
-        find friendlywrt-h5/out/ -name "FriendlyWrt_*img*" | xargs -i gzip {}
+        find friendlywrt-h5/out/ -name "FriendlyWrt_*img*" | xargs -i -n 1 sh -c "gzip -c {} > {}.gz"
 
     - name: Organize files
       id: organize
