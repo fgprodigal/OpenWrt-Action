@@ -136,7 +136,7 @@ jobs:
       if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
       run: |
         cd friendlywrt-h5/out/
-        rm -rf packages
+        rm -rf output_h5_kmodules
         echo "::set-env name=FIRMWARE::$(pwd)"
         echo "::set-output name=status::success"
 
