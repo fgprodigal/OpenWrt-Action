@@ -18,6 +18,8 @@ on:
       - 'x86_64.config'
   schedule:
     - cron: 0 22 * * *
+  watch:
+    types: started
 #  watch:
 #    types: [started]
 
@@ -35,6 +37,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
 
     steps:
     - name: Checkout
