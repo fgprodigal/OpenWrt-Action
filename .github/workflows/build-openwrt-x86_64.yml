@@ -70,6 +70,7 @@ jobs:
     - name: Install feeds
       run: |
         cd openwrt
+        echo 'src-git ssrplus https://github.com/fw876/helloworld' >> feeds.conf.default
         ./scripts/feeds update -a
         ./scripts/feeds install -a
 

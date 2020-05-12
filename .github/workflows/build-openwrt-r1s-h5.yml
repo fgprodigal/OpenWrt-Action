@@ -94,6 +94,7 @@ jobs:
     - name: Install feeds
       run: |
         cd friendlywrt-h5/friendlywrt
+        echo 'src-git ssrplus https://github.com/fw876/helloworld' >> feeds.conf.default
         ./scripts/feeds update -a
         ./scripts/feeds install -a
 
