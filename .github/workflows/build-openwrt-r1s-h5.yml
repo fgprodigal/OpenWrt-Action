@@ -62,7 +62,7 @@ jobs:
           git clone https://github.com/friendlyarm/repo
           sudo cp repo/repo /usr/bin/
 
-      - name: Init Source
+      - name: Init source
         run: |
           mkdir friendlywrt-h5
           cd friendlywrt-h5
