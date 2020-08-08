@@ -28,125 +28,110 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     if: github.event.repository.owner.id == github.event.sender.id
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        ref: master
+      - name: Checkout
+        uses: actions/checkout@master
+        with:
+          ref: master
 
-    - name: Initialization environment
-      env:
-        DEBIAN_FRONTEND: noninteractive
-      run: |
-        sudo rm -rf /swapfile /etc/apt/sources.list.d/*
-        sudo -E apt-get -qq update
-        wget -O - https://raw.githubusercontent.com/friendlyarm/build-env-on-ubuntu-bionic/master/install.sh | bash
-        wget -O - https://raw.githubusercontent.com/friendlyarm/build-env-on-ubuntu-bionic/master/install.sh | bash
+      - name: Initialization environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo rm -rf /etc/apt/sources.list.d
+          sudo apt-get update
+          sudo apt-get -y --no-install-recommends install build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs gcc-multilib g++-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler
+          curl https://raw.githubusercontent.com/friendlyarm/build-env-on-ubuntu-bionic/master/install.sh  | sed '/#/d' | sed 's/\\//g' | sed 's/exit 0//g' | sed 's/sudo apt -y install//g' | sed 's/sudo apt-get -y install//g' | sed 's/:i386//g' | xargs sudo apt-get -y --no-install-recommends install
 
-    - name: Free up disk space
-      if: env.FREE_UP_DISK == 'true'
-      env:
-        DEBIAN_FRONTEND: noninteractive
-      run: |
-        sudo rm -rf /usr/share/dotnet
-        docker rmi `docker images -q`
-        sudo -E apt-get -q purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* mysql* php*
-        sudo -E apt-get -qq autoremove --purge
-        sudo -E apt-get -qq clean
+      - name: Free up disk space
+        if: env.FREE_UP_DISK == 'true'
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android/sdk
+          docker rmi `docker images -q`
+          sudo -E apt-get -q purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* mysql* php*
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
 
-    - name: Install repo
-      run: |
-        git clone https://github.com/friendlyarm/repo
-        sudo cp repo/repo /usr/bin/
+      - name: Install repo
+        run: |
+          git clone https://github.com/friendlyarm/repo
+          sudo cp repo/repo /usr/bin/
 
-    - name: Download source
-      run: |
-        mkdir friendlywrt-h5
-        cd friendlywrt-h5
-        repo init -u https://github.com/friendlyarm/friendlywrt_manifests -b master -m h5.xml --repo-url=https://github.com/friendlyarm/repo  --no-clone-bundle
+      - name: Init Source
+        run: |
+          mkdir friendlywrt-h5
+          cd friendlywrt-h5
+          repo init -u https://github.com/friendlyarm/friendlywrt_manifests -b master -m h5.xml --repo-url=https://github.com/friendlyarm/repo --no-clone-bundle --depth=1
+          repo sync -c --no-tags --no-clone-bundle -j8
+          cd friendlywrt/ && git fetch --unshallow
 
-    - name: Merge upstearm OpenWrt
-      run: |
-        cd friendlywrt-h5
-        cd .repo/manifests
-        rm -f ./h5.xml
-        wget -O h5.xml https://raw.githubusercontent.com/skytotwo/NanoPi-R1S-Build-By-Actions/master/source_xml/h5_19.07.xml
-        repo sync -c  --no-clone-bundle
+      - name: Mods
+        run: |
+          cd friendlywrt-h5
+          . ../remove_unused_config.sh
+          cat ../app_config.seed >> configs/config_h5
+          cd friendlywrt
+          git config --local user.email "action@github.com" && git config --local user.name "GitHub Action"
+          git remote add upstream https://github.com/coolsnowwolf/openwrt && git fetch upstream
+          git checkout upstream/lede-17.01 -b tmp
+          git rm README.md
+          git commit -m 'reset'
+          git checkout origin/master
+          git rebase 90bb1cf9c33e73de5019686b8bd495f689e675a4^ --onto tmp -X theirs
+          rm -f target/linux/allwinner-h5/patches-4.14/0001-net-thunderx-workaround-BGX-TX-Underflow-issue.patch target/linux/generic/hack-4.14/999-net-patch-linux-kernel-to-support-shortcut-fe.patch
+          git checkout upstream/lede-17.01 -- feeds.conf.default
+          sed -i -E 's/#(src-git.+)(helloworld.+)/\1\2/' feeds.conf.default
+          sed -i -E 's/src-git helloworld/src-git ssrplus/' feeds.conf.default
+          git apply ../../enable_autocore.diff
 
-    - name: Merge lede
-      run: |
-        cd friendlywrt-h5
-        git clone --depth 1 $REPO_URL -b $REPO_BRANCH lede
-        cd friendlywrt
-        cp -r ../lede/package/lean package/
-        sed -i 's/https:\/\/git.openwrt.org\/project\/luci.git^039ef1f4deba725d3591b159bbc9569885d68131/https:\/\/github.com\/coolsnowwolf\/luci/' feeds.conf.default
-        sed -i 's/https:\/\/git.openwrt.org\/feed\/packages.git^00803ffc91e80b16e9c1603ff32106d42e255923/https:\/\/github.com\/coolsnowwolf\/packages/' feeds.conf.default
+      - name: Install feeds
+        run: |
+          cd friendlywrt-h5/friendlywrt
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
 
-    - name: Update target.mk
-      run: |
-        cd friendlywrt-h5/friendlywrt/include
-        sed -i 's/dnsmasq /dnsmasq-full default-settings luci /' target.mk
+      - name: Load custom configuration
+        run: |
+          chmod +x $DIY_SH
+          cd friendlywrt-h5/friendlywrt
+          cp ../configs/config_h5 .config
+          ../../$DIY_SH
+          sed -i '/STAMP_BUILT/d' feeds/packages/utils/runc/Makefile feeds/packages/utils/containerd/Makefile
 
-    - name: Install feeds
-      run: |
-        cd friendlywrt-h5/friendlywrt
-        echo 'src-git ssrplus https://github.com/fw876/helloworld' >> feeds.conf.default
-        ./scripts/feeds update -a
-        ./scripts/feeds install -a
+      - name: Build FriendlyWrt
+        run: |
+          cd friendlywrt-h5/friendlywrt
+          make defconfig && make download -j8
+          make -s -j$(nproc) || make V=s -j1
 
-    - name: Add tools
-      run: |
-        chmod +x tools.sh
-        cd friendlywrt-h5/friendlywrt
-        ../../tools.sh
-        
-    - name: Load custom configuration
-      run: |
-        [ -e files ] && mv files friendlywrt-h5/friendlywrt/files
-        [ -e mod ] && mv mod friendlywrt-h5/friendlywrt/mod
-        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE friendlywrt-h5/friendlywrt/.config
-        chmod +x $DIY_SH
-        cd friendlywrt-h5/friendlywrt
-        ../../$DIY_SH
-        make defconfig
+      - name: Build SD img
+        run: |
+          cd friendlywrt-h5
+          sed -i '130,150 {/build_friendlywrt/d}' scripts/build.sh
+          ./build.sh nanopi_r1s.mk
 
-    - name: SSH connection to Actions
-      uses: P3TERX/debugger-action@master
-      if: env.SSH_ACTIONS == 'true'
+      - name: Zip files
+        run: |
+          find friendlywrt-h5/out/ -name "FriendlyWrt_*img*" | xargs -i gzip {}
 
-    - name: Download package
-      if: always()
-      run: |
-        cd friendlywrt-h5/friendlywrt
-        make download -j8
-        find dl -size -1024c -exec ls -l {} \;
-        find dl -size -1024c -exec rm -f {} \;
+      - name: Organize files
+        id: organize
+        if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
+        run: |
+          cd friendlywrt-h5/scripts/sd-fuse/out/
+          rm -rf output_h5_kmodules
+          rm -rf .gitignore
+          echo "::set-env name=FIRMWARE::$(pwd)"
+          echo "::set-output name=status::success"
 
-    - name: Build OpenWrt
-      run: |
-        cd friendlywrt-h5
-        ./build.sh nanopi_r1s.mk
-
-    - name: Zip files
-      run: |
-        find friendlywrt-h5/out/ -name "FriendlyWrt_*img*" | xargs -i gzip {}
-
-    - name: Organize files
-      id: organize
-      if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
-      run: |
-        cd friendlywrt-h5/scripts/sd-fuse/out/
-        rm -rf output_h5_kmodules
-        rm -rf .gitignore
-        echo "::set-env name=FIRMWARE::$(pwd)"
-        echo "::set-output name=status::success"
-
-    - name: Upload firmware directory
-      uses: actions/upload-artifact@master
-      if: steps.organize.outputs.status == 'success' && !cancelled()
-      with:
-        name: FriendlyWrt_NanoPi-R1S H5
-        path: ${{ env.FIRMWARE }}
+      - name: Upload firmware directory
+        uses: actions/upload-artifact@master
+        if: steps.organize.outputs.status == 'success' && !cancelled()
+        with:
+          name: FriendlyWrt_NanoPi-R1S H5
+          path: ${{ env.FIRMWARE }}
