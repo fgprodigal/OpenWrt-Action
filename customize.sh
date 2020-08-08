@@ -22,10 +22,13 @@ sed -i '/$ipt -A SS_SPEC_TPROXY -p udp -d 240.0.0.0\/4 -j RETURN/a \
 
 sed -i 's/ +luci-theme-bootstrap//g' feeds/luci/collections/luci/Makefile
 
+sed -i '/uci commit luci/i\uci set luci.main.mediaurlbase="/luci-static/argon"' package/lean/default-settings/files/zzz-default-settings
 sed -i "s/echo \"DISTRIB_DESCRIPTION='OpenWrt '\"/echo \"DISTRIB_DESCRIPTION='OpenWrt Compiled by Ray '\"/g" package/lean/default-settings/files/zzz-default-settings
 
 sed -i 's/192.168.1.1/10.0.0.1/g' package/base-files/files/bin/config_generate
 sed -i 's/192.168.2.1/10.0.0.1/g' package/base-files/files/bin/config_generate
 sed -i 's/\%C/\%C build by Ray/g' package/base-files/files/etc/banner
+sed -i '/8.8.8.8/d' package/base-files/files/root/setup.sh
+sed -i 's/192.168.2.1/10.0.0.1/g' package/base-files/files/root/setup.sh
 
 # [ -e mod ] && cp -f mod/redsocks.init feeds/packages/net/redsocks/files/redsocks.init
