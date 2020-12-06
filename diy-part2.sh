@@ -19,6 +19,8 @@ sed -i '/$ipt -A SS_SPEC_TPROXY -p udp -d 240.0.0.0\/4 -j RETURN/a \
         $ipt -A SS_SPEC_TPROXY -p udp -m ipp2p --edk --bit --kazaa --gnu -j RETURN
 ' feeds/ssrplus/luci-app-ssr-plus/root/usr/bin/ssr-rules
 
+sed -i 's/table.sort(key_table)/table.sort(key_table, function(a,b) return server_table[b]>server_table[c] end)/g' feeds/ssrplus/luci-app-ssr-plus/luasrc/model/cbi/shadowsocksr/client.lua
+
 
 sed -i 's/ +luci-theme-bootstrap//g' feeds/luci/collections/luci/Makefile
 
